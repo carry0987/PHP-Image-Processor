@@ -30,7 +30,7 @@ class Image
         if (!($this->library = self::getLibrary($library, $extension))) {
             throw new \Exception('No image library available on your server');
         }
-        $class = 'carry0987\Image\Image'.$this->library;
+        $class = '\\'.__NAMESPACE__.'\Image'.$this->library;
         $this->image = new $class($source_filepath);
     }
 
