@@ -7,6 +7,9 @@ use carry0987\Image\Interface\ImageInterface;
 class ImageImagick implements ImageInterface
 {
     public $image;
+    /**
+     * @var \finfo A fileinfo resource.
+     */
     protected $file_info;
     private $source_filepath = null;
     private $allow_type = array('jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp', 'x-ms-bmp');
@@ -16,8 +19,12 @@ class ImageImagick implements ImageInterface
 
     public function __construct($source_filepath)
     {
-        $this->source_filepath = $source_filepath;
         $this->file_info = finfo_open(FILEINFO_MIME_TYPE);
+        $this->source_filepath = $source_filepath;
+
+        if ($this->file_info === false) {
+            throw new \Exception('[Image] Unable to open fileinfo resource.');
+        }
     }
 
     public function setAllowType($allow_type)
