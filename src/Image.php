@@ -3,6 +3,7 @@ namespace carry0987\Image;
 
 use carry0987\Image\ImageGD;
 use carry0987\Image\ImageImagick;
+use DateTimeImmutable;
 
 //Handle image modification
 class Image
@@ -122,7 +123,7 @@ class Image
         if ($timestamp === null) {
             $timestamp = time();   
         }
-        $date = new \DateTimeImmutable('@'.$timestamp);
+        $date = new DateTimeImmutable('@'.$timestamp);
         $path_date = $date->format('Y/m/d/');
         $this->param['path_date'] = $path_date;
     }

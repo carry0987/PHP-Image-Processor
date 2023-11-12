@@ -2,6 +2,8 @@
 namespace carry0987\Image;
 
 use carry0987\Image\Interface\ImageInterface;
+use Imagick;
+use ImagickPixel;
 
 //Class for Imagick
 class ImageImagick implements ImageInterface
@@ -50,7 +52,7 @@ class ImageImagick implements ImageInterface
     {
         if (is_object($this->image)) return;
         $this->checkFileType($this->source_filepath);
-        $this->image = new \Imagick($this->source_filepath);
+        $this->image = new Imagick($this->source_filepath);
         $this->image->setImageDepth(8);
     }
 
@@ -101,13 +103,13 @@ class ImageImagick implements ImageInterface
 
     public function rotateImage(float $rotation)
     {
-        $this->image->rotateImage(new \ImagickPixel(), -$rotation);
-        $this->image->setImageOrientation(\Imagick::ORIENTATION_TOPLEFT);
+        $this->image->rotateImage(new ImagickPixel(), -$rotation);
+        $this->image->setImageOrientation(Imagick::ORIENTATION_TOPLEFT);
     }
 
     public function resizeImage(int $width, int $height)
     {
-        $this->image->setInterlaceScheme(\Imagick::INTERLACE_LINE);
+        $this->image->setInterlaceScheme(Imagick::INTERLACE_LINE);
         //Get image size
         $image_width = $this->getWidth();
         $image_height = $this->getHeight();
@@ -124,7 +126,7 @@ class ImageImagick implements ImageInterface
             $this->image->scaleImage($this->getWidth()/2, $this->getHeight()/2);
         }
         */
-        return $this->image->resizeImage($width, $height, \Imagick::FILTER_LANCZOS, 1);
+        return $this->image->resizeImage($width, $height, Imagick::FILTER_LANCZOS, 1);
     }
 
     public function sharpenImage(float $amount)
@@ -145,9 +147,9 @@ class ImageImagick implements ImageInterface
         */
         if ($opacity < 100) {
             //NOTE: Using setImageOpacity will destroy current alpha channels
-            $ioverlay->evaluateImage(\Imagick::EVALUATE_MULTIPLY, $opacity/100, \Imagick::CHANNEL_ALPHA);
+            $ioverlay->evaluateImage(Imagick::EVALUATE_MULTIPLY, $opacity/100, Imagick::CHANNEL_ALPHA);
         }
-        return $this->image->compositeImage($ioverlay, \Imagick::COMPOSITE_DISSOLVE, $x, $y);
+        return $this->image->compositeImage($ioverlay, Imagick::COMPOSITE_DISSOLVE, $x, $y);
     }
 
     public function writeImage(string $destination_filepath)
