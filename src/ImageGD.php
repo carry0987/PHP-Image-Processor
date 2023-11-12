@@ -16,7 +16,7 @@ class ImageGD implements ImageInterface
     private $root_path = null;
     private $destination_filepath;
 
-    public function __construct($source_filepath)
+    public function __construct(string $source_filepath)
     {
         $this->source_filepath = $source_filepath;
         $this->file_info = finfo_open(FILEINFO_MIME_TYPE);
@@ -26,7 +26,7 @@ class ImageGD implements ImageInterface
         }
     }
 
-    public function setAllowType($allow_type)
+    public function setAllowType(array | string $allow_type)
     {
         if (!is_array($allow_type)) {
             $allow_type = explode(',', $allow_type);
@@ -37,7 +37,7 @@ class ImageGD implements ImageInterface
         }
     }
 
-    public function checkFileType($filepath)
+    public function checkFileType(string $filepath)
     {
         $mime_type = finfo_file($this->file_info, $filepath);
         $mime_type = str_replace('image/', '', $mime_type);
@@ -76,7 +76,7 @@ class ImageGD implements ImageInterface
         }
     }
 
-    public function setRootPath($root_path)
+    public function setRootPath(string $root_path)
     {
         $this->root_path = $root_path;
     }
@@ -100,7 +100,7 @@ class ImageGD implements ImageInterface
         return imagesy($this->image);
     }
 
-    public function cropImage($width, $height, $x, $y)
+    public function cropImage(int $width, int $height, int $x, int $y)
     {
         $image_create = imagecreatetruecolor($width, $height);
         imagealphablending($image_create, false);
@@ -118,7 +118,7 @@ class ImageGD implements ImageInterface
         return false;
     }
 
-    public function cropSquare($size)
+    public function cropSquare(int $size)
     {
         //Calculating the part of the image to use for thumbnail
         $width = $this->getWidth();
@@ -160,14 +160,14 @@ class ImageGD implements ImageInterface
         return true;
     }
 
-    public function rotateImage($rotation)
+    public function rotateImage(float $rotation)
     {
         $image_create = imagerotate($this->image, $rotation, 0);
         imagedestroy($this->image);
         $this->image = $image_create;
     }
 
-    public function setCompressionQuality($quality)
+    public function setCompressionQuality(int $quality)
     {
         $this->quality = $quality;
     }
@@ -208,13 +208,13 @@ class ImageGD implements ImageInterface
         return $result;
     }
 
-    public function sharpenImage($amount)
+    public function sharpenImage(float $amount)
     {
         $matrix = Image::getSharpenMatrix($amount);
         return imageconvolution($this->image, $matrix, 1, 0);
     }
 
-    public function compositeImage($overlay, $x, $y, $opacity)
+    public function compositeImage(Image $overlay, int $x, int $y, int $opacity)
     {
         $ioverlay = $overlay->image->image;
         /*
@@ -234,7 +234,7 @@ class ImageGD implements ImageInterface
         return true;
     }
 
-    public function writeImage($destination_filepath)
+    public function writeImage(string $destination_filepath)
     {
         $this->destination_filepath = $destination_filepath;
         $extension = strtolower(Image::getExtension($destination_filepath));

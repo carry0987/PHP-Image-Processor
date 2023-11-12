@@ -19,7 +19,7 @@ class Image
     const LIBRARY_GD = 'GD';
     const LIBRARY_IMAGICK = 'Imagick';
 
-    public function __construct(string $source_filepath, $library = null)
+    public function __construct(string $source_filepath, string $library = null)
     {
         if (!file_exists($source_filepath)) {
             throw new \Exception('File does not exist');
