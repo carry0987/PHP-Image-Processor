@@ -19,7 +19,7 @@ class Image
     const LIBRARY_GD = 'GD';
     const LIBRARY_IMAGICK = 'Imagick';
 
-    public function __construct($source_filepath, $library = null)
+    public function __construct(string $source_filepath, $library = null)
     {
         if (!file_exists($source_filepath)) {
             throw new \Exception('File does not exist');
@@ -35,23 +35,23 @@ class Image
     }
 
     //Unknow methods will be redirected to image object
-    public function __call($method, $arguments)
+    public function __call(mixed $method, mixed $arguments)
     {
         return call_user_func_array(array($this->image, $method), $arguments);
     }
 
-    public function setAllowType($allow_type)
+    public function setAllowType(array | string $allow_type)
     {
         $this->image->setAllowType($allow_type);
     }
 
-    public static function getExtension($filename)
+    public static function getExtension(string $filename)
     {
         return pathinfo($filename, PATHINFO_EXTENSION);
     }
 
     //Returns a normalized convolution kernel for sharpening
-    public static function getSharpenMatrix($amount)
+    public static function getSharpenMatrix(float $amount)
     {
         //Amount should be in the range of 48-10
         $amount = round(abs(-48 + ($amount * 0.38)), 2);
@@ -70,7 +70,7 @@ class Image
         return $matrix;
     }
 
-    private function getResizeResult($destination_filepath, $width, $height, $time = null)
+    private function getResizeResult(string $destination_filepath, int $width, int $height, float $time = null)
     {
         return array(
             'source' => $this->source_filepath,
@@ -93,7 +93,7 @@ class Image
         return function_exists('gd_info');
     }
 
-    public static function getLibrary($library, $extension = null)
+    public static function getLibrary(string $library, string $extension = null)
     {
         if (is_null($library)) {
             $library = self::LIBRARY_GD;
@@ -116,7 +116,7 @@ class Image
         return false;
     }
 
-    public function saveByDate($timestamp = null)
+    public function saveByDate(int $timestamp = null)
     {
         $this->config['save_by_date'] = true;
         if ($timestamp === null) {
@@ -132,7 +132,7 @@ class Image
         return $this->image->startProcess();
     }
 
-    public function setRootPath($root_path)
+    public function setRootPath(string $root_path)
     {
         return $this->image->setRootPath($root_path);
     }
@@ -151,19 +151,19 @@ class Image
         return $this->image->getHeight();
     }
 
-    public function setCompressionQuality($quality)
+    public function setCompressionQuality(int $quality)
     {
         return $this->image->setCompressionQuality($quality);
     }
 
-    public function cropImage($width, $height, $x, $y)
+    public function cropImage(int $width, int $height, int $x, int $y)
     {
         return $this->image->cropImage($width, $height, $x, $y);
     }
 
-    public function cropSquare($size)
+    public function cropSquare(int $width)
     {
-        return $this->image->cropSquare($size);
+        return $this->image->cropSquare($width);
     }
 
     public function stripImage()
@@ -171,7 +171,7 @@ class Image
         return $this->image->stripImage();
     }
 
-    public function rotateImage($rotation)
+    public function rotateImage(float $rotation)
     {
         return $this->image->rotateImage($rotation);
     }
@@ -181,17 +181,17 @@ class Image
         return $this->image->resizeImage($width, $height);
     }
 
-    public function sharpenImage($amount)
+    public function sharpenImage(float $amount)
     {
         return $this->image->sharpenImage($amount);
     }
 
-    public function compositeImage($overlay, $x, $y, $opacity)
+    public function compositeImage(Image $overlay, int $x, int $y, int $opacity)
     {
         return $this->image->compositeImage($overlay, $x, $y, $opacity);
     }
 
-    public function writeImage($destination_filepath)
+    public function writeImage(string $destination_filepath)
     {
         if (!empty($destination_filepath)) {
             $check_dir = dirname($destination_filepath);
