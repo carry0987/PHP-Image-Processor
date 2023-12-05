@@ -6,7 +6,7 @@ use carry0987\Image\Image;
 //Define all needed method for image class
 interface ImageInterface
 {
-    public function setAllowType(array | string $allow_type);
+    public function setAllowType($allow_type);
     public function checkFileType(string $filepath);
     public function startProcess();
     public function setRootPath(string $root_path);
