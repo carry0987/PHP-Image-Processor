@@ -36,12 +36,12 @@ class Image
     }
 
     //Unknow methods will be redirected to image object
-    public function __call($method, $arguments)
+    public function __call(mixed $method, mixed $arguments)
     {
         return call_user_func_array(array($this->image, $method), $arguments);
     }
 
-    public function setAllowType($allow_type)
+    public function setAllowType(array | string $allow_type)
     {
         $this->image->setAllowType($allow_type);
     }
