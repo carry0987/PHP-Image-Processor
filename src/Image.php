@@ -3,6 +3,11 @@ namespace carry0987\Image;
 
 use carry0987\Image\ImageGD;
 use carry0987\Image\ImageImagick;
+use carry0987\Image\Exception\{
+    IOException,
+    UnsupportedLibraryException,
+    InitializationException
+};
 use DateTimeImmutable;
 
 //Handle image modification
@@ -23,16 +28,15 @@ class Image
     public function __construct(string $source_filepath, string $library = null)
     {
         if (!file_exists($source_filepath)) {
-            throw new \Exception('File does not exist');
+            throw new IOException();
         }
         $this->source_filepath = $source_filepath;
         if (is_object($this->image)) return;
         $extension = strtolower(self::getExtension($source_filepath));
         if (!($this->library = self::getLibrary($library, $extension))) {
-            throw new \Exception('No image library available on your server');
+            throw new UnsupportedLibraryException();
         }
-        $class = '\\'.__NAMESPACE__.'\Image'.$this->library;
-        $this->image = new $class($source_filepath);
+        $this->initLibrary($source_filepath);
     }
 
     //Unknow methods will be redirected to image object
@@ -68,20 +72,8 @@ class Image
                 $matrix[$i][$j] /= $norm;
             }
         }
-        return $matrix;
-    }
 
-    private function getResizeResult(string $destination_filepath, int $width, int $height, float $time = null)
-    {
-        return array(
-            'source' => $this->source_filepath,
-            'destination' => $destination_filepath,
-            'width' => $width,
-            'height' => $height,
-            'size' => floor(filesize($destination_filepath) / 1024).' KB',
-            'time' => $time ? number_format((microtime(true) - $time) * 1000, 2, '.', ' ').' ms' : null,
-            'library' => $this->library
-        );
+        return $matrix;
     }
 
     public static function isImagick()
@@ -114,6 +106,7 @@ class Image
                     return self::getLibrary('auto', $extension);
                 }
         }
+
         return false;
     }
 
@@ -200,6 +193,7 @@ class Image
                 mkdir($check_dir, 0777, true);
             }
         }
+
         return $this->image->writeImage($destination_filepath);
     }
 
@@ -208,5 +202,32 @@ class Image
         if (method_exists($this->image, 'destroyImage')) {
             return $this->image->destroyImage();
         }
+    }
+
+    private function initLibrary(string $source_filepath)
+    {
+        switch ($this->library) {
+            case self::LIBRARY_IMAGICK:
+                $this->image = new ImageImagick($source_filepath);
+                break;
+            case self::LIBRARY_GD:
+                $this->image = new ImageGD($source_filepath);
+                break;
+            default:
+                throw new InitializationException();
+        }
+    }
+
+    private function getResizeResult(string $destination_filepath, int $width, int $height, float $time = null)
+    {
+        return array(
+            'source' => $this->source_filepath,
+            'destination' => $destination_filepath,
+            'width' => $width,
+            'height' => $height,
+            'size' => floor(filesize($destination_filepath) / 1024).' KB',
+            'time' => $time ? number_format((microtime(true) - $time) * 1000, 2, '.', ' ').' ms' : null,
+            'library' => $this->library
+        );
     }
 }
