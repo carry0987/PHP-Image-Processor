@@ -11,7 +11,7 @@ interface ImageInterface
     public function setRootPath(string $root_path): self;
     public function setCompressionQuality(int $quality): self;
     public function startProcess(): self;
-    public function getCreatedImagePath();
+    public function getCreatedPath();
     public function getWidth();
     public function getHeight();
     public function cropImage(int $width, int $height, int $x, int $y);

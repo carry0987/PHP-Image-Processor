@@ -149,9 +149,9 @@ class Image
         return $this;
     }
 
-    public function getCreatedImagePath()
+    public function getCreatedPath()
     {
-        return $this->image->getCreatedImagePath();
+        return $this->image->getCreatedPath();
     }
 
     public function getWidth()

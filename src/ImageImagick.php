@@ -77,7 +77,7 @@ class ImageImagick implements ImageInterface
         return $this;
     }
 
-    public function getCreatedImagePath()
+    public function getCreatedPath()
     {
         $destination_filepath = $this->destination_filepath;
         if ($this->root_path !== null) {

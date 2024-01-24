@@ -10,9 +10,9 @@ $image->startProcess()
     ->writeImage('test-modified.jpg');
 $image->destroyImage();
 
-if (file_exists($image->getCreatedImagePath())) {
+if (file_exists($image->getCreatedPath())) {
     echo '<h1>Image modified successfully</h1>';
-    echo '<img src="', $image->getCreatedImagePath(), '" />';
+    echo '<img src="', $image->getCreatedPath(), '" />';
 } else {
     echo '<h1>Image modified failed</h1>';
 }
