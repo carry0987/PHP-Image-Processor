@@ -29,7 +29,7 @@ class ImageImagick implements ImageInterface
         }
     }
 
-    public function setAllowType(array | string $allow_type)
+    public function setAllowType(array|string $allow_type): self
     {
         if (!is_array($allow_type)) {
             $allow_type = explode(',', $allow_type);
@@ -37,28 +37,44 @@ class ImageImagick implements ImageInterface
         foreach ($allow_type as $key => $value) {
             $this->allow_type[$key] = 'image/'.strtolower($value);
         }
+
+        return $this;
     }
 
-    public function checkFileType(string $filepath)
+    public function checkFileType(string $filepath): self
     {
         $mime_type = finfo_file($this->file_info, $filepath);
         $mime_type = str_replace('image/', '', $mime_type);
         if (!in_array($mime_type, $this->allow_type)) {
             throw new \Exception('[Image] Unsupported file format');
         }
+
+        return $this;
     }
 
-    public function startProcess()
-    {
-        if (is_object($this->image)) return;
-        $this->checkFileType($this->source_filepath);
-        $this->image = new Imagick($this->source_filepath);
-        $this->image->setImageDepth(8);
-    }
-
-    public function setRootPath(string $root_path)
+    public function setRootPath(string $root_path): self
     {
         $this->root_path = $root_path;
+
+        return $this;
+    }
+
+    public function setCompressionQuality(int $quality): self
+    {
+        $this->quality = $quality;
+
+        return $this;
+    }
+
+    public function startProcess(): self
+    {
+        if (is_object($this->image)) return $this;
+        $this->checkFileType($this->source_filepath);
+        $this->image = new Imagick($this->source_filepath);
+        $this->correctImageOrientation();
+        $this->image->setImageDepth(8);
+
+        return $this;
     }
 
     public function getCreateFilePath()
@@ -67,6 +83,7 @@ class ImageImagick implements ImageInterface
         if ($this->root_path !== null) {
             $destination_filepath = str_replace($this->root_path, '', $this->destination_filepath);
         }
+
         return $destination_filepath;
     }
 
@@ -78,11 +95,6 @@ class ImageImagick implements ImageInterface
     public function getHeight()
     {
         return $this->image->getImageHeight();
-    }
-
-    public function setCompressionQuality(int $quality)
-    {
-        $this->quality = $quality;
     }
 
     public function cropImage(int $width, int $height, int $x, int $y)
@@ -126,12 +138,14 @@ class ImageImagick implements ImageInterface
             $this->image->scaleImage($this->getWidth()/2, $this->getHeight()/2);
         }
         */
+
         return $this->image->resizeImage($width, $height, Imagick::FILTER_LANCZOS, 1);
     }
 
     public function sharpenImage(float $amount)
     {
         $m = Image::getSharpenMatrix($amount);
+
         return $this->image->convolveImage($m);
     }
 
@@ -149,7 +163,32 @@ class ImageImagick implements ImageInterface
             //NOTE: Using setImageOpacity will destroy current alpha channels
             $ioverlay->evaluateImage(Imagick::EVALUATE_MULTIPLY, $opacity/100, Imagick::CHANNEL_ALPHA);
         }
+
         return $this->image->compositeImage($ioverlay, Imagick::COMPOSITE_DISSOLVE, $x, $y);
+    }
+
+    public function correctImageOrientation(): self
+    {
+        $orientation = $this->image->getImageOrientation();
+
+        switch ($orientation) {
+            case Imagick::ORIENTATION_BOTTOMRIGHT:
+                $this->image->rotateimage("#000", 180);
+                break;
+            case Imagick::ORIENTATION_RIGHTTOP:
+                $this->image->rotateimage("#000", 90);
+                break;
+            case Imagick::ORIENTATION_LEFTBOTTOM:
+                $this->image->rotateimage("#000", -90);
+                break;
+        }
+
+        // Set the orientation to the default value if there was a change
+        if ($orientation !== Imagick::ORIENTATION_TOPLEFT) {
+            $this->image->setImageOrientation(Imagick::ORIENTATION_TOPLEFT);
+        }
+
+        return $this;
     }
 
     public function writeImage(string $destination_filepath)
@@ -161,6 +200,7 @@ class ImageImagick implements ImageInterface
         $this->image->setImageColorspace($this->image->getImageColorspace());
         //Use 4:2:2 chroma subsampling (reduce file size by 20-30% with "almost" no human perception)
         $this->image->setSamplingFactors(array(2, 1));
+
         return $this->image->writeImage($destination_filepath);
     }
 

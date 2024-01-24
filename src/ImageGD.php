@@ -26,7 +26,7 @@ class ImageGD implements ImageInterface
         }
     }
 
-    public function setAllowType(array | string $allow_type)
+    public function setAllowType(array|string $allow_type): self
     {
         if (!is_array($allow_type)) {
             $allow_type = explode(',', $allow_type);
@@ -35,20 +35,38 @@ class ImageGD implements ImageInterface
         foreach ($allow_type as $key => $value) {
             $this->allow_type[$key] = 'image/'.strtolower($value);
         }
+
+        return $this;
     }
 
-    public function checkFileType(string $filepath)
+    public function checkFileType(string $filepath): self
     {
         $mime_type = finfo_file($this->file_info, $filepath);
         $mime_type = str_replace('image/', '', $mime_type);
         if (!in_array($mime_type, $this->allow_type)) {
             throw new \Exception('[Image] Unsupported file format');
         }
+
+        return $this;
     }
 
-    public function startProcess()
+    public function setRootPath(string $root_path): self
     {
-        if (is_object($this->image)) return;
+        $this->root_path = $root_path;
+
+        return $this;
+    }
+
+    public function setCompressionQuality(int $quality): self
+    {
+        $this->quality = $quality;
+
+        return $this;
+    }
+
+    public function startProcess(): self
+    {
+        if (is_object($this->image)) return $this;
         $this->checkFileType($this->source_filepath);
         $source_filepath = $this->source_filepath;
         $extension = strtolower(Image::getExtension($source_filepath));
@@ -57,6 +75,7 @@ class ImageGD implements ImageInterface
             case 'jpg':
             case 'jpeg':
                 $this->image = @imagecreatefromjpeg($source_filepath);
+                $this->correctImageOrientation();
                 if (!$this->image) {
                     $this->image = imagecreatefromstring(file_get_contents($source_filepath));
                 }
@@ -74,11 +93,8 @@ class ImageGD implements ImageInterface
                 $this->image = imagecreatefromstring(file_get_contents($source_filepath));
                 break;
         }
-    }
 
-    public function setRootPath(string $root_path)
-    {
-        $this->root_path = $root_path;
+        return $this;
     }
 
     public function getCreateFilePath()
@@ -87,6 +103,7 @@ class ImageGD implements ImageInterface
         if ($this->root_path !== null) {
             $destination_filepath = str_replace($this->root_path, '', $this->destination_filepath);
         }
+
         return $destination_filepath;
     }
 
@@ -115,6 +132,7 @@ class ImageGD implements ImageInterface
             return true;
         }
         imagedestroy($image_create);
+
         return false;
     }
 
@@ -152,6 +170,7 @@ class ImageGD implements ImageInterface
         } else {
             imagedestroy($image_create);
         }
+
         return $result;
     }
 
@@ -165,11 +184,6 @@ class ImageGD implements ImageInterface
         $image_create = imagerotate($this->image, $rotation, 0);
         imagedestroy($this->image);
         $this->image = $image_create;
-    }
-
-    public function setCompressionQuality(int $quality)
-    {
-        $this->quality = $quality;
     }
 
     public function resizeImage(int $width, int $height)
@@ -205,12 +219,14 @@ class ImageGD implements ImageInterface
         } else {
             imagedestroy($image_create);
         }
+
         return $result;
     }
 
     public function sharpenImage(float $amount)
     {
         $matrix = Image::getSharpenMatrix($amount);
+
         return imageconvolution($this->image, $matrix, 1, 0);
     }
 
@@ -231,7 +247,29 @@ class ImageGD implements ImageInterface
         imagecopy($cut, $ioverlay, 0, 0, 0, 0, $ow, $oh);
         imagecopymerge($this->image, $cut, $x, $y, 0, 0, $ow, $oh, $opacity);
         imagedestroy($cut);
+
         return true;
+    }
+
+    public function correctImageOrientation(): self
+    {
+        if (!function_exists('exif_read_data')) return $this;
+        $exif = @exif_read_data($this->source_filepath);
+        if (!empty($exif['Orientation'])) {
+            switch ($exif['Orientation']) {
+                case 3:
+                    $this->image = imagerotate($this->image, 180, 0);
+                    break;
+                case 6:
+                    $this->image = imagerotate($this->image, -90, 0);
+                    break;
+                case 8:
+                    $this->image = imagerotate($this->image, 90, 0);
+                    break;
+            }
+        }
+
+        return $this;
     }
 
     public function writeImage(string $destination_filepath)
@@ -241,21 +279,23 @@ class ImageGD implements ImageInterface
         switch ($extension) {
             case 'jpg':
             case 'jpeg':
-                imagejpeg($this->image, $destination_filepath, $this->quality);
+                $result = imagejpeg($this->image, $destination_filepath, $this->quality);
                 break;
             case 'png':
-                imagepng($this->image, $destination_filepath, -1);
+                $result = imagepng($this->image, $destination_filepath, -1);
                 break;
             case 'gif':
-                imagegif($this->image, $destination_filepath);
+                $result = imagegif($this->image, $destination_filepath);
                 break;
             case 'webp':
-                imagewebp($this->image, $destination_filepath, $this->quality);
+                $result = imagewebp($this->image, $destination_filepath, $this->quality);
                 break;
             default:
-                imagejpeg($this->image, $destination_filepath, $this->quality);
+                $result = imagejpeg($this->image, $destination_filepath, $this->quality);
                 break;
         }
+
+        return $result;
     }
 
     public function destroyImage()
