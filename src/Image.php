@@ -217,17 +217,4 @@ class Image
                 throw new InitializationException();
         }
     }
-
-    private function getResizeResult(string $destination_filepath, int $width, int $height, float $time = null)
-    {
-        return array(
-            'source' => $this->source_filepath,
-            'destination' => $destination_filepath,
-            'width' => $width,
-            'height' => $height,
-            'size' => floor(filesize($destination_filepath) / 1024).' KB',
-            'time' => $time ? number_format((microtime(true) - $time) * 1000, 2, '.', ' ').' ms' : null,
-            'library' => $this->library
-        );
-    }
 }
