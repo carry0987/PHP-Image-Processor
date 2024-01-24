@@ -96,10 +96,10 @@ class ImageGD implements ImageInterface
         return $this;
     }
 
-    public function getCreatedPath()
+    public function getCreatedPath(bool $full_path = false)
     {
         $destination_filepath = $this->destination_filepath;
-        if ($this->root_path !== null) {
+        if ($this->root_path !== null && $full_path === false) {
             $destination_filepath = str_replace($this->root_path, '', $this->destination_filepath);
         }
 

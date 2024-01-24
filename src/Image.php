@@ -16,7 +16,6 @@ class Image
     public $image;
     public $library = '';
     public $source_filepath = '';
-    private $destination_filepath = null;
     //Inner variable
     private $config = array(
         'save_by_date' => false
@@ -149,9 +148,9 @@ class Image
         return $this;
     }
 
-    public function getCreatedPath()
+    public function getCreatedPath(bool $full_path = false)
     {
-        return $this->image->getCreatedPath();
+        return $this->image->getCreatedPath($full_path);
     }
 
     public function getWidth()
@@ -214,7 +213,6 @@ class Image
 
         // Write image
         $result = $this->image->writeImage($destination_filepath);
-        $this->destination_filepath = $result ? $destination_filepath : null;
 
         return $result;
     }
