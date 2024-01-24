@@ -11,6 +11,7 @@ interface ImageInterface
     public function setRootPath(string $root_path): self;
     public function setCompressionQuality(int $quality): self;
     public function startProcess(): self;
+    public function getRootPath(): string;
     public function getCreatedPath(bool $full_path = false);
     public function getWidth();
     public function getHeight();

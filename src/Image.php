@@ -148,6 +148,11 @@ class Image
         return $this;
     }
 
+    public function getRootPath()
+    {
+        return $this->image->getRootPath();
+    }
+
     public function getCreatedPath(bool $full_path = false)
     {
         return $this->image->getCreatedPath($full_path);
@@ -198,7 +203,7 @@ class Image
         return $this->image->compositeImage($overlay, $x, $y, $opacity);
     }
 
-    public function writeImage(string $destination_filepath)
+    public function writeImage(string $destination_filepath, bool $in_root_path = false)
     {
         if (!empty($destination_filepath)) {
             if ($this->config['save_by_date'] === true) {
@@ -209,6 +214,9 @@ class Image
             if (!is_dir($check_dir) || !file_exists($check_dir)) {
                 mkdir($check_dir, 0755, true);
             }
+        }
+        if ($in_root_path === true) {
+            $destination_filepath = rtrim((string) $this->getRootPath(), '/').'/'.$destination_filepath;
         }
 
         // Write image
