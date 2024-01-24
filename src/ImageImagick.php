@@ -34,9 +34,9 @@ class ImageImagick implements ImageInterface
         if (!is_array($allow_type)) {
             $allow_type = explode(',', $allow_type);
         }
-        foreach ($allow_type as $key => $value) {
-            $this->allow_type[$key] = 'image/'.strtolower($value);
-        }
+        $this->allow_type = array_map(function($type) {
+            return 'image/'.strtolower(trim($type));
+        }, $allow_type);
 
         return $this;
     }
@@ -77,7 +77,7 @@ class ImageImagick implements ImageInterface
         return $this;
     }
 
-    public function getCreateFilePath()
+    public function getCreatedImagePath()
     {
         $destination_filepath = $this->destination_filepath;
         if ($this->root_path !== null) {
@@ -173,13 +173,13 @@ class ImageImagick implements ImageInterface
 
         switch ($orientation) {
             case Imagick::ORIENTATION_BOTTOMRIGHT:
-                $this->image->rotateimage("#000", 180);
+                $this->image->rotateimage(new ImagickPixel('none'), 180);
                 break;
             case Imagick::ORIENTATION_RIGHTTOP:
-                $this->image->rotateimage("#000", 90);
+                $this->image->rotateimage(new ImagickPixel('none'), 90);
                 break;
             case Imagick::ORIENTATION_LEFTBOTTOM:
-                $this->image->rotateimage("#000", -90);
+                $this->image->rotateimage(new ImagickPixel('none'), -90);
                 break;
         }
 
@@ -204,9 +204,9 @@ class ImageImagick implements ImageInterface
         return $this->image->writeImage($destination_filepath);
     }
 
-    public function destroyImage()
+    public function destroyImage(): bool
     {
-        $this->image->clear();
+        return $this->image->clear();
     }
 
     public function __destruct()

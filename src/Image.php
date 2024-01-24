@@ -16,11 +16,14 @@ class Image
     public $image;
     public $library = '';
     public $source_filepath = '';
+    private $destination_filepath = null;
     //Inner variable
     private $config = array(
         'save_by_date' => false
     );
-    private $param = array();
+    private $param = array(
+        'path_date' => null
+    );
 
     const LIBRARY_GD = 'GD';
     const LIBRARY_IMAGICK = 'Imagick';
@@ -40,7 +43,7 @@ class Image
     }
 
     //Unknow methods will be redirected to image object
-    public function __call(mixed $method, mixed $arguments)
+    public function __call(string $method, array $arguments)
     {
         return call_user_func_array(array($this->image, $method), $arguments);
     }
@@ -97,42 +100,58 @@ class Image
                 if ($extension != 'gif' && self::isImagick()) {
                     return self::LIBRARY_IMAGICK;
                 }
+                break;
             case self::LIBRARY_GD:
                 if (self::isGD()) {
                     return self::LIBRARY_GD;
                 }
+                break;
             default:
                 if ($library != 'auto') {
                     return self::getLibrary('auto', $extension);
                 }
+                break;
         }
 
         return false;
     }
 
-    public function saveByDate(int $timestamp = null)
+    public function saveByDate(int $timestamp = null): self
     {
         $this->config['save_by_date'] = true;
         if ($timestamp === null) {
             $timestamp = time();   
         }
         $date = new DateTimeImmutable('@'.$timestamp);
-        $path_date = $date->format('Y/m/d/');
-        $this->param['path_date'] = $path_date;
+        $this->param['path_date'] = $date->format('Y/m/d/');
+
+        return $this;
     }
 
-    public function startProcess()
+    public function startProcess(): self
     {
-        return $this->image->startProcess();
+        $this->image->startProcess();
+
+        return $this;
     }
 
-    public function setRootPath(string $root_path)
+    public function setRootPath(string $root_path): self
     {
-        return $this->image->setRootPath($root_path);
+        $this->image->setRootPath($root_path);
+
+        return $this;
     }
-    public function getCreateFilePath()
+
+    public function setCompressionQuality(int $quality): self
     {
-        return $this->image->getCreateFilePath();
+        $this->image->setCompressionQuality($quality);
+
+        return $this;
+    }
+
+    public function getCreatedImagePath()
+    {
+        return $this->image->getCreatedImagePath();
     }
 
     public function getWidth()
@@ -143,11 +162,6 @@ class Image
     public function getHeight()
     {
         return $this->image->getHeight();
-    }
-
-    public function setCompressionQuality(int $quality)
-    {
-        return $this->image->setCompressionQuality($quality);
     }
 
     public function cropImage(int $width, int $height, int $x, int $y)
@@ -188,20 +202,26 @@ class Image
     public function writeImage(string $destination_filepath)
     {
         if (!empty($destination_filepath)) {
+            if ($this->config['save_by_date'] === true) {
+                $path_date = $this->param['path_date'] ?? '';
+                $destination_filepath = $path_date.basename($destination_filepath);
+            }
             $check_dir = dirname($destination_filepath);
             if (!is_dir($check_dir) || !file_exists($check_dir)) {
-                mkdir($check_dir, 0777, true);
+                mkdir($check_dir, 0755, true);
             }
         }
 
-        return $this->image->writeImage($destination_filepath);
+        // Write image
+        $result = $this->image->writeImage($destination_filepath);
+        $this->destination_filepath = $result ? $destination_filepath : null;
+
+        return $result;
     }
 
     public function destroyImage() 
     {
-        if (method_exists($this->image, 'destroyImage')) {
-            return $this->image->destroyImage();
-        }
+        return $this->image->destroyImage();
     }
 
     private function initLibrary(string $source_filepath)

@@ -31,10 +31,9 @@ class ImageGD implements ImageInterface
         if (!is_array($allow_type)) {
             $allow_type = explode(',', $allow_type);
         }
-        $this->allow_type = array();
-        foreach ($allow_type as $key => $value) {
-            $this->allow_type[$key] = 'image/'.strtolower($value);
-        }
+        $this->allow_type = array_map(function($type) {
+            return 'image/'.strtolower(trim($type));
+        }, $allow_type);
 
         return $this;
     }
@@ -97,7 +96,7 @@ class ImageGD implements ImageInterface
         return $this;
     }
 
-    public function getCreateFilePath()
+    public function getCreatedImagePath()
     {
         $destination_filepath = $this->destination_filepath;
         if ($this->root_path !== null) {
@@ -298,9 +297,9 @@ class ImageGD implements ImageInterface
         return $result;
     }
 
-    public function destroyImage()
+    public function destroyImage(): bool
     {
-        imagedestroy($this->image);
+        return imagedestroy($this->image);
     }
 
     public function __destruct()
