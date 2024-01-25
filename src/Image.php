@@ -47,7 +47,7 @@ class Image
         return call_user_func_array(array($this->image, $method), $arguments);
     }
 
-    public function setAllowType(array | string $allow_type)
+    public function setAllowType(array|string $allow_type)
     {
         $this->image->setAllowType($allow_type);
     }
