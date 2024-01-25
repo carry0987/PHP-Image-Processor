@@ -36,7 +36,6 @@ class ImageGD implements ImageInterface
     public function checkFileType(string $filepath): self
     {
         $mime_type = finfo_file($this->file_info, $filepath);
-        $mime_type = str_replace('image/', '', $mime_type);
         if (!in_array($mime_type, $this->allow_type)) {
             throw new \Exception('[Image] Unsupported file format');
         }
