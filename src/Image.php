@@ -26,6 +26,7 @@ class Image
 
     const LIBRARY_GD = 'GD';
     const LIBRARY_IMAGICK = 'Imagick';
+    const DIR_SEP = DIRECTORY_SEPARATOR;
 
     public function __construct(string $source_filepath, string $library = null)
     {
@@ -221,7 +222,8 @@ class Image
         if (!empty($destination_filepath)) {
             if ($this->config['save_by_date'] === true) {
                 $path_date = $this->param['path_date'] ?? '';
-                $destination_filepath = $path_date.basename($destination_filepath);
+                $dir_path = dirname($destination_filepath);
+                $destination_filepath = self::trimPath($dir_path.'/'.$path_date.'/'.basename($destination_filepath));
             }
             $check_dir = dirname($destination_filepath);
             if (!is_dir($check_dir) || !file_exists($check_dir)) {
@@ -255,5 +257,10 @@ class Image
             default:
                 throw new InitializationException();
         }
+    }
+
+    private static function trimPath(string $path)
+    {
+        return str_replace(array('/', '\\', '//', '\\\\'), self::DIR_SEP, $path);
     }
 }
