@@ -231,7 +231,8 @@ class Image
             }
         }
         if ($in_root_path === true) {
-            $destination_filepath = rtrim((string) $this->getRootPath(), '/').'/'.$destination_filepath;
+            $destination_filepath = ((string) $this->getRootPath()).'/'.$destination_filepath;
+            $destination_filepath = self::trimPath($destination_filepath);
         }
 
         // Write image
