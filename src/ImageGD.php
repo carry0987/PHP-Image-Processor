@@ -63,7 +63,7 @@ class ImageGD implements ImageInterface
         if (is_object($this->image)) return $this;
         $this->checkFileType($this->source_filepath);
         $source_filepath = $this->source_filepath;
-        $extension = strtolower(Image::getExtension($source_filepath));
+        $extension = Image::getFileExtension($source_filepath);
         if ($extension === 'svg') throw new \Exception('[Image] Unsupported file format');
         switch ($extension) {
             case 'jpg':
@@ -274,7 +274,7 @@ class ImageGD implements ImageInterface
     public function writeImage(string $destination_filepath)
     {
         $this->destination_filepath = $destination_filepath;
-        $extension = strtolower(Image::getExtension($destination_filepath));
+        $extension = Image::getFileExtension($destination_filepath);
         switch ($extension) {
             case 'jpg':
             case 'jpeg':

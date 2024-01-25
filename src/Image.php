@@ -34,7 +34,7 @@ class Image
         }
         $this->source_filepath = $source_filepath;
         if (is_object($this->image)) return;
-        $extension = strtolower(self::getExtension($source_filepath));
+        $extension = self::getFileExtension($source_filepath);
         if (!($this->library = self::getLibrary($library, $extension))) {
             throw new UnsupportedLibraryException();
         }
@@ -63,9 +63,11 @@ class Image
         return $this;
     }
 
-    public static function getExtension(string $filename)
+    public static function getFileExtension(string $filename, bool $to_lower = true)
     {
-        return pathinfo($filename, PATHINFO_EXTENSION);
+        $ext = pathinfo($filename, PATHINFO_EXTENSION);
+
+        return ($to_lower === true) ? strtolower($ext) : $ext;
     }
 
     //Returns a normalized convolution kernel for sharpening
