@@ -47,9 +47,20 @@ class Image
         return call_user_func_array(array($this->image, $method), $arguments);
     }
 
-    public function setAllowType(array|string $allow_type)
+    public function setAllowType(array|string $allow_type): self
     {
+        if (!is_array($allow_type)) {
+            $filtered = array_filter(explode(',', $allow_type), function($str) {
+                return !empty($str);
+            });
+            $allow_type = array_values($filtered);
+        }
+        $allow_type = array_map(function($type) {
+            return 'image/'.strtolower(trim($type));
+        }, $allow_type);
         $this->image->setAllowType($allow_type);
+
+        return $this;
     }
 
     public static function getExtension(string $filename)

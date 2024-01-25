@@ -6,7 +6,7 @@ use carry0987\Image\Image;
 //Define all needed method for image class
 interface ImageInterface
 {
-    public function setAllowType(array|string $allow_type): self;
+    public function setAllowType(array $allow_type): self;
     public function checkFileType(string $filepath): self;
     public function setRootPath(string $root_path): self;
     public function setCompressionQuality(int $quality): self;

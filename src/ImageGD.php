@@ -26,14 +26,9 @@ class ImageGD implements ImageInterface
         }
     }
 
-    public function setAllowType(array|string $allow_type): self
+    public function setAllowType(array $allow_type): self
     {
-        if (!is_array($allow_type)) {
-            $allow_type = explode(',', $allow_type);
-        }
-        $this->allow_type = array_map(function($type) {
-            return 'image/'.strtolower(trim($type));
-        }, $allow_type);
+        $this->allow_type = $allow_type;
 
         return $this;
     }
