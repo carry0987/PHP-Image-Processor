@@ -29,7 +29,7 @@ class Image
     const LIBRARY_IMAGICK = 'Imagick';
     const DIR_SEP = DIRECTORY_SEPARATOR;
 
-    public function __construct(string $source_filepath, ?string $library)
+    public function __construct(string $source_filepath, ?string $library = null)
     {
         if (!file_exists($source_filepath)) {
             throw new IOException();
@@ -103,7 +103,7 @@ class Image
         return function_exists('gd_info');
     }
 
-    public static function getLibrary(string $library, ?string $extension)
+    public static function getLibrary(string $library, ?string $extension = null)
     {
         if (is_null($library)) {
             $library = self::LIBRARY_GD;
@@ -130,7 +130,7 @@ class Image
         return false;
     }
 
-    public function saveByDate(?int $timestamp): self
+    public function saveByDate(?int $timestamp = null): self
     {
         $this->config['save_by_date'] = true;
         if ($timestamp === null) {
