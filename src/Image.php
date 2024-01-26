@@ -21,14 +21,15 @@ class Image
         'save_by_date' => false
     );
     private $param = array(
-        'path_date' => null
+        'path_date' => null,
+        'extension' => null
     );
 
     const LIBRARY_GD = 'GD';
     const LIBRARY_IMAGICK = 'Imagick';
     const DIR_SEP = DIRECTORY_SEPARATOR;
 
-    public function __construct(string $source_filepath, string $library = null)
+    public function __construct(string $source_filepath, ?string $library)
     {
         if (!file_exists($source_filepath)) {
             throw new IOException();
@@ -64,7 +65,7 @@ class Image
         return $this;
     }
 
-    public static function getFileExtension(string $filename, bool $to_lower = true)
+    public static function getFileExtension(string $filename, bool $to_lower = true): string
     {
         $ext = pathinfo($filename, PATHINFO_EXTENSION);
 
@@ -102,7 +103,7 @@ class Image
         return function_exists('gd_info');
     }
 
-    public static function getLibrary(string $library, string $extension = null)
+    public static function getLibrary(string $library, ?string $extension)
     {
         if (is_null($library)) {
             $library = self::LIBRARY_GD;
@@ -129,7 +130,7 @@ class Image
         return false;
     }
 
-    public function saveByDate(int $timestamp = null): self
+    public function saveByDate(?int $timestamp): self
     {
         $this->config['save_by_date'] = true;
         if ($timestamp === null) {
@@ -158,6 +159,13 @@ class Image
     public function setCompressionQuality(int $quality): self
     {
         $this->image->setCompressionQuality($quality);
+
+        return $this;
+    }
+
+    public function setFormat(string $extension): self
+    {
+        $this->param['extension'] = strtolower($extension);
 
         return $this;
     }
@@ -235,6 +243,11 @@ class Image
             $destination_filepath = self::trimPath($destination_filepath);
         }
 
+        // Set format
+        if ($this->param['extension'] !== null) {
+            $destination_filepath = self::replaceExtension($destination_filepath, $this->param['extension']);
+        }
+
         // Write image
         $result = $this->image->writeImage($destination_filepath);
 
@@ -263,5 +276,16 @@ class Image
     private static function trimPath(string $path)
     {
         return str_replace(array('/', '\\', '//', '\\\\'), self::DIR_SEP, $path);
+    }
+
+    private static function replaceExtension(string $path, ?string $extension)
+    {
+        if (empty($extension)) return $path;
+
+        $info = pathinfo($path);
+        $dirname = $info['dirname'];
+        $filename = $info['filename'];
+
+        return self::trimPath($dirname.self::DIR_SEP.$filename.'.'.$extension);
     }
 }
