@@ -13,10 +13,10 @@ class ImageImagick implements ImageInterface
      * @var \finfo A fileinfo resource.
      */
     protected $file_info;
-    private $source_filepath = null;
     private $allow_type = array('jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp', 'x-ms-bmp');
     private $quality = 75;
     private $root_path = null;
+    private $source_filepath = null;
     private $destination_filepath;
 
     public function __construct(string $source_filepath)
@@ -71,12 +71,12 @@ class ImageImagick implements ImageInterface
         return $this;
     }
 
-    public function getRootPath(): string
+    public function getRootPath(): ?string
     {
         return $this->root_path;
     }
 
-    public function getCreatedPath(bool $full_path = false)
+    public function getCreatedPath(bool $full_path = false): ?string
     {
         $destination_filepath = $this->destination_filepath;
         if ($this->root_path !== null && $full_path === false) {
@@ -86,39 +86,39 @@ class ImageImagick implements ImageInterface
         return $destination_filepath;
     }
 
-    public function getWidth()
+    public function getWidth(): int
     {
         return $this->image->getImageWidth();
     }
 
-    public function getHeight()
+    public function getHeight(): int
     {
         return $this->image->getImageHeight();
     }
 
-    public function cropImage(int $width, int $height, int $x, int $y)
+    public function cropImage(int $width, int $height, int $x, int $y): bool
     {
         return $this->image->cropImage($width, $height, $x, $y);
     }
 
-    public function cropSquare(int $width)
+    public function cropSquare(int $width): bool
     {
         return $this->image->cropThumbnailImage($width, $width);
     }
 
     //Strips an image of all profiles and comments
-    public function stripImage()
+    public function stripImage(): bool
     {
         return $this->image->stripImage();
     }
 
-    public function rotateImage(float $rotation)
+    public function rotateImage(float $rotation): void
     {
         $this->image->rotateImage(new ImagickPixel(), -$rotation);
         $this->image->setImageOrientation(Imagick::ORIENTATION_TOPLEFT);
     }
 
-    public function resizeImage(int $width, int $height)
+    public function resizeImage(int $width, int $height): bool
     {
         $this->image->setInterlaceScheme(Imagick::INTERLACE_LINE);
         //Get image size
@@ -141,14 +141,14 @@ class ImageImagick implements ImageInterface
         return $this->image->resizeImage($width, $height, Imagick::FILTER_LANCZOS, 1);
     }
 
-    public function sharpenImage(float $amount)
+    public function sharpenImage(float $amount): bool
     {
         $m = Image::getSharpenMatrix($amount);
 
         return $this->image->convolveImage($m);
     }
 
-    public function compositeImage(Image $overlay, int $x, int $y, int $opacity)
+    public function compositeImage(Image $overlay, int $x, int $y, int $opacity): bool
     {
         if (!($overlay instanceof Image)) throw new \Exception('[Image] Invalid overlay image');
         $ioverlay = $overlay->image->image;
@@ -190,7 +190,7 @@ class ImageImagick implements ImageInterface
         return $this;
     }
 
-    public function writeImage(string $destination_filepath)
+    public function writeImage(string $destination_filepath): bool
     {
         $this->destination_filepath = $destination_filepath;
         //Set compress quality

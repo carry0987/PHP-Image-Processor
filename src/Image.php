@@ -44,7 +44,7 @@ class Image
     }
 
     //Unknow methods will be redirected to image object
-    public function __call(string $method, array $arguments)
+    public function __call(string $method, array $arguments): mixed
     {
         return call_user_func_array(array($this->image, $method), $arguments);
     }
@@ -73,7 +73,7 @@ class Image
     }
 
     //Returns a normalized convolution kernel for sharpening
-    public static function getSharpenMatrix(float $amount)
+    public static function getSharpenMatrix(float $amount): array
     {
         //Amount should be in the range of 48-10
         $amount = round(abs(-48 + ($amount * 0.38)), 2);
@@ -93,17 +93,17 @@ class Image
         return $matrix;
     }
 
-    public static function isImagick()
+    public static function isImagick(): bool
     {
         return (extension_loaded('imagick') && class_exists('Imagick'));
     }
 
-    public static function isGD()
+    public static function isGD(): bool
     {
         return function_exists('gd_info');
     }
 
-    public static function getLibrary(string $library, ?string $extension = null)
+    public static function getLibrary(string $library, ?string $extension = null): ?string
     {
         if (is_null($library)) {
             $library = self::LIBRARY_GD;
@@ -127,7 +127,7 @@ class Image
                 break;
         }
 
-        return false;
+        return null;
     }
 
     public function saveByDate(?int $timestamp = null): self
@@ -170,62 +170,62 @@ class Image
         return $this;
     }
 
-    public function getRootPath()
+    public function getRootPath(): ?string
     {
         return $this->image->getRootPath();
     }
 
-    public function getCreatedPath(bool $full_path = false)
+    public function getCreatedPath(bool $full_path = false): ?string
     {
         return $this->image->getCreatedPath($full_path);
     }
 
-    public function getWidth()
+    public function getWidth(): int
     {
         return $this->image->getWidth();
     }
 
-    public function getHeight()
+    public function getHeight(): int
     {
         return $this->image->getHeight();
     }
 
-    public function cropImage(int $width, int $height, int $x, int $y)
+    public function cropImage(int $width, int $height, int $x, int $y): bool
     {
         return $this->image->cropImage($width, $height, $x, $y);
     }
 
-    public function cropSquare(int $width)
+    public function cropSquare(int $width): bool
     {
         return $this->image->cropSquare($width);
     }
 
-    public function stripImage()
+    public function stripImage(): bool
     {
         return $this->image->stripImage();
     }
 
-    public function rotateImage(float $rotation)
+    public function rotateImage(float $rotation): void
     {
-        return $this->image->rotateImage($rotation);
+        $this->image->rotateImage($rotation);
     }
 
-    public function resizeImage(int $width, int $height)
+    public function resizeImage(int $width, int $height): bool
     {
         return $this->image->resizeImage($width, $height);
     }
 
-    public function sharpenImage(float $amount)
+    public function sharpenImage(float $amount): bool
     {
         return $this->image->sharpenImage($amount);
     }
 
-    public function compositeImage(Image $overlay, int $x, int $y, int $opacity)
+    public function compositeImage(Image $overlay, int $x, int $y, int $opacity): bool
     {
         return $this->image->compositeImage($overlay, $x, $y, $opacity);
     }
 
-    public function writeImage(string $destination_filepath, bool $in_root_path = false)
+    public function writeImage(string $destination_filepath, bool $in_root_path = false): bool
     {
         if (!empty($destination_filepath)) {
             if ($this->config['save_by_date'] === true) {
@@ -254,12 +254,12 @@ class Image
         return $result;
     }
 
-    public function destroyImage() 
+    public function destroyImage(): bool
     {
         return $this->image->destroyImage();
     }
 
-    private function initLibrary(string $source_filepath)
+    private function initLibrary(string $source_filepath): void
     {
         switch ($this->library) {
             case self::LIBRARY_IMAGICK:
@@ -273,12 +273,12 @@ class Image
         }
     }
 
-    private static function trimPath(string $path)
+    private static function trimPath(string $path): string
     {
         return str_replace(array('/', '\\', '//', '\\\\'), self::DIR_SEP, $path);
     }
 
-    private static function replaceExtension(string $path, ?string $extension)
+    private static function replaceExtension(string $path, ?string $extension): string
     {
         if (empty($extension)) return $path;
 
