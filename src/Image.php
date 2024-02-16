@@ -43,8 +43,14 @@ class Image
         $this->initLibrary($source_filepath);
     }
 
-    //Unknow methods will be redirected to image object
-    public function __call(string $method, array $arguments): mixed
+    /**
+     *  Unknow methods will be redirected to image object
+     * @param string $method
+     * @param array $arguments
+     * 
+     * @return mixed
+     */
+    public function __call(string $method, array $arguments)
     {
         return call_user_func_array(array($this->image, $method), $arguments);
     }
