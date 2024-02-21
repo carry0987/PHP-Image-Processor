@@ -11,7 +11,7 @@ class ImageGD implements ImageInterface
      * @var \finfo A fileinfo resource.
      */
     protected $file_info;
-    private $allow_type = array('jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp', 'x-ms-bmp');
+    private $allow_type = array('jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp', 'x-ms-bmp', 'avif');
     private $quality = 75;
     private $root_path = null;
     private $source_filepath = null;
@@ -82,6 +82,16 @@ class ImageGD implements ImageInterface
                 break;
             case 'webp':
                 $this->image = imagecreatefromwebp($source_filepath);
+                break;
+            case 'bmp':
+            case 'x-ms-bmp':
+                $this->image = imagecreatefrombmp($source_filepath);
+                break;
+            case 'avif':
+                if (!function_exists('imagecreatefromavif')) {
+                    throw new \Exception('[Image] AVIF is not supported');
+                }
+                $this->image = imagecreatefromavif($source_filepath);
                 break;
             default:
                 $this->image = imagecreatefromstring(file_get_contents($source_filepath));
@@ -288,6 +298,16 @@ class ImageGD implements ImageInterface
                 break;
             case 'webp':
                 $result = imagewebp($this->image, $destination_filepath, $this->quality);
+                break;
+            case 'bmp':
+            case 'x-ms-bmp':
+                $result = imagebmp($this->image, $destination_filepath);
+                break;
+            case 'avif':
+                if (!function_exists('imageavif')) {
+                    throw new \Exception('[Image] AVIF is not supported');
+                }
+                $result = imageavif($this->image, $destination_filepath, $this->quality);
                 break;
             default:
                 $result = imagejpeg($this->image, $destination_filepath, $this->quality);

@@ -13,7 +13,7 @@ class ImageImagick implements ImageInterface
      * @var \finfo A fileinfo resource.
      */
     protected $file_info;
-    private $allow_type = array('jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp', 'x-ms-bmp');
+    private $allow_type = array('jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp', 'x-ms-bmp', 'avif');
     private $quality = 75;
     private $root_path = null;
     private $source_filepath = null;
