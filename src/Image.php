@@ -36,8 +36,7 @@ class Image
         }
         $this->source_filepath = $source_filepath;
         if (is_object($this->image)) return;
-        $extension = self::getFileExtension($source_filepath);
-        if (!($this->library = self::getLibrary($library, $extension))) {
+        if (!($this->library = self::getLibrary($library))) {
             throw new UnsupportedLibraryException();
         }
         $this->initLibrary($source_filepath);
@@ -109,26 +108,26 @@ class Image
         return function_exists('gd_info');
     }
 
-    public static function getLibrary(string $library, ?string $extension = null): ?string
+    public static function getLibrary(string $library): ?string
     {
         if (is_null($library)) {
             $library = self::LIBRARY_GD;
         }
         switch (strtolower($library)) {
             case 'auto':
-            case self::LIBRARY_IMAGICK:
+            case strtolower(self::LIBRARY_IMAGICK):
                 if (self::isImagick()) {
                     return self::LIBRARY_IMAGICK;
                 }
                 break;
-            case self::LIBRARY_GD:
+            case strtolower(self::LIBRARY_GD):
                 if (self::isGD()) {
                     return self::LIBRARY_GD;
                 }
                 break;
             default:
                 if ($library != 'auto') {
-                    return self::getLibrary('auto', $extension);
+                    return self::getLibrary('auto');
                 }
                 break;
         }
