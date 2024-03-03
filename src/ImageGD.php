@@ -21,6 +21,9 @@ class ImageGD implements ImageInterface
     {
         $this->source_filepath = $source_filepath;
         $this->file_info = finfo_open(FILEINFO_MIME_TYPE);
+        $this->allow_type = array_map(function($type) {
+            return 'image/'.strtolower(trim($type));
+        }, $this->allow_type);
 
         if ($this->file_info === false) {
             throw new \Exception('[Image] Unable to open fileinfo resource.');

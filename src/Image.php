@@ -117,7 +117,7 @@ class Image
         switch (strtolower($library)) {
             case 'auto':
             case self::LIBRARY_IMAGICK:
-                if ($extension != 'gif' && self::isImagick()) {
+                if (self::isImagick()) {
                     return self::LIBRARY_IMAGICK;
                 }
                 break;

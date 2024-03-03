@@ -18,11 +18,15 @@ class ImageImagick implements ImageInterface
     private $root_path = null;
     private $source_filepath = null;
     private $destination_filepath;
+    private $is_animated = false;
 
     public function __construct(string $source_filepath)
     {
         $this->file_info = finfo_open(FILEINFO_MIME_TYPE);
         $this->source_filepath = $source_filepath;
+        $this->allow_type = array_map(function($type) {
+            return 'image/'.strtolower(trim($type));
+        }, $this->allow_type);
 
         if ($this->file_info === false) {
             throw new \Exception('[Image] Unable to open fileinfo resource.');
@@ -65,6 +69,12 @@ class ImageImagick implements ImageInterface
         if (is_object($this->image)) return $this;
         $this->checkFileType($this->source_filepath);
         $this->image = new Imagick($this->source_filepath);
+        // Check if GIF for processing animation
+        if ($this->image->getNumberImages() > 1) {
+            $this->is_animated = true;
+            // Prepare for animation handling
+            $this->image = $this->image->coalesceImages();
+        }
         $this->correctImageOrientation();
         $this->image->setImageDepth(8);
 
@@ -98,11 +108,28 @@ class ImageImagick implements ImageInterface
 
     public function cropImage(int $width, int $height, int $x, int $y): bool
     {
+        if ($this->is_animated) {
+            $result = false;
+            foreach ($this->image as $frame) {
+                $result = $frame->cropImage($width, $height, $x, $y);
+                if (!$result) break;
+            }
+            return $result;
+        }
+
         return $this->image->cropImage($width, $height, $x, $y);
     }
 
-    public function cropSquare(int $width): bool
-    {
+    public function cropSquare(int $width): bool {
+        if ($this->is_animated) {
+            $result = false;
+            foreach ($this->image as $frame) {
+                $result = $frame->cropThumbnailImage($width, $width);
+                if (!$result) break;
+            }
+            return $result;
+        }
+
         return $this->image->cropThumbnailImage($width, $width);
     }
 
@@ -114,6 +141,13 @@ class ImageImagick implements ImageInterface
 
     public function rotateImage(float $rotation): void
     {
+        if ($this->is_animated) {
+            foreach ($this->image as $frame) {
+                $frame->rotateImage(new ImagickPixel(), -$rotation);
+                $frame->setImageOrientation(Imagick::ORIENTATION_TOPLEFT);
+            }
+            return;
+        }
         $this->image->rotateImage(new ImagickPixel(), -$rotation);
         $this->image->setImageOrientation(Imagick::ORIENTATION_TOPLEFT);
     }
@@ -132,11 +166,15 @@ class ImageImagick implements ImageInterface
         if ($height === 0) {
             $height = ceil(($width / $image_width) * $image_height);
         }
-        /*
-        if ($this->getWidth()%2 === 0 && $this->getHeight()%2 === 0 && $this->getWidth() > 3*$width) {
-            $this->image->scaleImage($this->getWidth()/2, $this->getHeight()/2);
+        if ($this->is_animated) {
+            $result = false;
+            foreach ($this->image as $frame) {
+                $frame->setInterlaceScheme(Imagick::INTERLACE_LINE);
+                $result = $frame->resizeImage($width, $height, Imagick::FILTER_LANCZOS, 1);
+                if (!$result) break;
+            }
+            return $result;
         }
-        */
 
         return $this->image->resizeImage($width, $height, Imagick::FILTER_LANCZOS, 1);
     }
@@ -144,6 +182,14 @@ class ImageImagick implements ImageInterface
     public function sharpenImage(float $amount): bool
     {
         $m = Image::getSharpenMatrix($amount);
+        if ($this->is_animated) {
+            $result = false;
+            foreach ($this->image as $frame) {
+                $result = $frame->convolveImage($m);
+                if (!$result) break;
+            }
+            return $result;
+        }
 
         return $this->image->convolveImage($m);
     }
@@ -200,7 +246,14 @@ class ImageImagick implements ImageInterface
         //Use 4:2:2 chroma subsampling (reduce file size by 20-30% with "almost" no human perception)
         $this->image->setSamplingFactors(array(2, 1));
 
-        return $this->image->writeImage($destination_filepath);
+        if ($this->is_animated) {
+            $this->image = $this->image->deconstructImages();
+            $result = $this->image->writeImages($destination_filepath, true);
+        } else {
+            $result = $this->image->writeImage($destination_filepath);
+        }
+
+        return $result;
     }
 
     public function destroyImage(): bool
